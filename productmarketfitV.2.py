@@ -1,3 +1,4 @@
+import io
 import pandas as pd
 import streamlit as st
 
@@ -13,11 +14,10 @@ st.write(
 # --- BARRA LATERAL: ENTRADA DE DATOS ---
 st.sidebar.header("⚙️ Entrada de Datos")
 
-# Selector del origen de los datos
 origen_datos = st.sidebar.radio("Selecciona el origen de los datos:", ("Simulador manual", "Subir archivo (CSV / Excel)"))
 
 todas_opciones = ["Muy decepcionado", "Algo decepcionado", "No decepcionado", "Ya no uso el producto"]
-respuestas_usuarios = []
+df_origen = pd.DataFrame(columns=["Respuesta"])
 
 if origen_datos == "Simulador manual":
     st.sidebar.write("---")
@@ -49,22 +49,18 @@ else:
             df_origen = df_origen.rename(columns={columna_seleccionada: "Respuesta"})
         except Exception as e:
             st.error(f"Error al procesar el archivo: {e}")
-            df_origen = pd.DataFrame(columns=["Respuesta"])
     else:
         st.info("💡 Subí un archivo en la barra lateral para procesar tus métricas reales.")
-        df_origen = pd.DataFrame(columns=["Respuesta"])
 
 # --- PROCESAMIENTO Y MÉTRICAS ---
 if not df_origen.empty and "Respuesta" in df_origen.columns:
-    # Limpieza básica y conteo
     conteo = df_origen["Respuesta"].value_counts()
     conteo_completo = conteo.reindex(todas_opciones, fill_value=0)
-
     total_respuestas = len(df_origen)
 
     if total_respuestas > 0:
         porcentajes = (conteo_completo / total_respuestas) * 100
-        pmf_score = percentages = porcentajes.get("Muy decepcionado", 0.0)
+        pmf_score = porcentajes.get("Muy decepcionado", 0.0)
 
         # UI de Resultados
         st.subheader("📈 Resultado del Análisis")
@@ -90,6 +86,19 @@ if not df_origen.empty and "Respuesta" in df_origen.columns:
         st.write("### 📋 Desglose de Datos")
         df_reporte = pd.DataFrame({"Porcentaje (%)": porcentajes, "Total Usuarios": conteo_completo})
         st.dataframe(df_reporte)
+
+        # --- BOTÓN DE DESCARGA EXCEL ---
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            df_reporte.to_excel(writer, sheet_name="Reporte PMF")
+        buffer.seek(0)
+
+        st.download_button(
+            label="📥 Descargar Reporte en Excel",
+            data=buffer,
+            file_name="reporte_product_market_fit.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
         # Plan de acción dinámico
         st.subheader("💡 Plan de acción recomendado")
