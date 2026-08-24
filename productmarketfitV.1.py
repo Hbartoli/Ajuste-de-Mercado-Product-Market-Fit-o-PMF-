@@ -43,7 +43,7 @@ else:
     porcentajes = pd.Series(0.0, index=todas_opciones)
 
 # Extraer la métrica clave
-pmf_score = percentages = porcentajes.get("Muy decepcionado", 0.0)
+pmf_score = porcentajes.get("Muy decepcionado", 0.0)
 
 # 3. Mostrar métricas y diagnóstico en pantalla
 st.subheader("📈 Resultado del Análisis")
@@ -64,5 +64,5 @@ st.bar_chart(porcentajes)
 
 # 5. Tabla detallada de datos de control
 st.write("### 📋 Desglose de Datos")
-df_reporte = pd.DataFrame("Porcentaje (%)": porcentajes, "Total Usuarios": conteo_completo})
+df_reporte = pd.DataFrame({"Porcentaje (%)": porcentajes, "Total Usuarios": conteo_completo})
 st.dataframe(df_reporte)
