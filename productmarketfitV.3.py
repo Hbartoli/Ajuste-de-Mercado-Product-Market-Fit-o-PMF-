@@ -215,15 +215,21 @@ if not df_origen.empty and "Respuesta" in df_origen.columns:
         buffer.seek(0)
         st.download_button(label=T["btn_descargar"], data=buffer, file_name="pmf_report.xlsx")
 
-        # Insights Cualitativos
-        if "Feedback" in df_origen.columns and origen_datos == T["op_envivo"]:
+               # --- SECCIÓN DE INSIGHTS CUALITATIVOS (REEMPLAZÁ EL FINAL DE TU ARCHIVO) ---
+        if origen_datos == T["op_envivo"]:
             st.write("---")
             st.subheader(T["feedback_tit"])
-            df_feedbacks = df_origen[df_origen["Feedback"].notna() & (df_origen["Feedback"] != "Sin comentarios")]
-            if not df_feedbacks.empty:
-if not df_feedbacks.empty:
-    for idx, row in df_feedbacks.tail(5).iterrows():
-        # Solución: Comillas simples afuera y comillas dobles adentro
-        st.info(f"**[{row['Respuesta']}]**: *\"{row['Feedback']}\"*")
-else:
-    st.write("No feedback submitted yet.")
+
+            # Filtrar filas válidas
+            df_feedbacks = df_origen[df_origen["Feedback"].notna()]
+            df_feedbacks = df_feedbacks[df_feedbacks["Feedback"] != "Sin comentarios"]
+
+            if df_feedbacks.empty:
+                st.write("No feedback submitted yet.")
+            else:
+                # Bucle limpio con saltos de línea garantizados
+                for idx, row in df_feedbacks.tail(5).iterrows():
+                    voto = row["Respuesta"]
+                    comentario = row["Feedback"]
+                    st.chat_message("user").write(f"**[{voto}]** {comentario}")
+
