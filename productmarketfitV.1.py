@@ -64,5 +64,5 @@ st.bar_chart(porcentajes)
 
 # 5. Tabla detallada de datos de control
 st.write("### 📋 Desglose de Datos")
-df_reporte = pd.DataFrame({"Porcentaje (%)": Gym = porcentajes, "Total Usuarios": conteo_completo})
+df_reporte = pd.DataFrame("Porcentaje (%)": porcentajes, "Total Usuarios": conteo_completo})
 st.dataframe(df_reporte)
