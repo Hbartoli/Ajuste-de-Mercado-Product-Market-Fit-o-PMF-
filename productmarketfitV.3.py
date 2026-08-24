@@ -96,7 +96,7 @@ TEXTOS = {
         "tabla_datos": "📋 Detalhamento dos Dados",
         "btn_descargar": "📥 Baixar Relatório em Excel",
         "plan_accion": "💡 Plano de Ação Recomendado",
-        "pmf_si": "✅ **PMF ALCANÇADO!** Seu produto tem tração real no mercado.",
+        "pmf_si": "✅ **PMF ALÇANÇADO!** Seu produto tem tração real no mercado.",
         "pmf_no": "⚠️ **SEM PMF AINDA.** Você precisa iterar ou falar com usuários.",
         "feedback_tit": "💬 Comentários Recentes dos Usuários (Insights Qualitativos)",
         "col_pct": "Porcentagem (%)",
@@ -135,33 +135,16 @@ if origen_datos == T["op_envivo"]:
             if "YOUR_SHEET_ID_HERE" in URL_GOOGLE_SHEET:
                 st.error("Por favor configura una URL de Google Sheets válida en el código.")
             else:
-                # Conexión directa vía query params para agregar filas sin librerías pesadas
-                import requests
+                st.toast("Respuesta registrada temporalmente.", icon="🚀")
 
-                # Mapeo invertido para registrar siempre en el mismo idioma base dentro del Excel si se desea
-                # Por simplicidad, guardamos la cadena tal cual se vota
-                datos_form = {
-                    "action": "append",
-                    "Respuesta": voto_usuario,
-                    "Feedback": feedback_usuario if feedback_usuario else "Sin comentarios",
-                }
-                # Intentamos leer la base actual para consolidar
-                try:
-                    # Para producción real y automatizada, se recomienda un Web App Script en Sheets.
-                    # Como fallback inmediato leemos el CSV público configurado:
-                    st.toast("Respuesta enviada. (Nota: Para grabar de forma nativa en Sheets se usa st.connection de Streamlit o Forms)", icon="ℹ️")
-                except Exception:
-                    pass
-
-    # Carga de la base de datos de Google Sheets de forma pública y asíncrona
+    # Carga de la base de datos de Google Sheets
     if "YOUR_SHEET_ID_HERE" not in URL_GOOGLE_SHEET:
         try:
             df_origen = pd.read_csv(URL_CSV)
-            # Asegurar mapeo de nombres de columnas
             if len(df_origen.columns) >= 2:
                 df_origen.columns = ["Respuesta", "Feedback"]
         except Exception:
-            st.warning("No se pudo leer la base de datos de Google Sheets. Verifica los permisos de compartir.")
+            st.warning("No se pudo leer la base de datos de Google Sheets. Verifica los permisos.")
 
 # 2. MODALIDAD: SIMULADOR MANUAL
 elif origen_datos == T["op_manual"]:
@@ -193,7 +176,6 @@ else:
 
 # --- PROCESAMIENTO GENERAL ---
 if not df_origen.empty and "Respuesta" in df_origen.columns:
-    # Ajustar respuestas a las opciones del idioma actual si vienen de base de datos
     conteo = df_origen["Respuesta"].value_counts()
     conteo_completo = conteo.reindex(todas_opciones, fill_value=0)
     total_respuestas = len(df_origen)
@@ -211,4 +193,31 @@ if not df_origen.empty and "Respuesta" in df_origen.columns:
             st.metric(
                 label=f"Sean Ellis Score ({T['muy_dec']})",
                 value=f"{pmf_score:.1f}%",
-delta=f"{pmf_score - 40:.1f}% vs Umbral (40%)",)with col2:st.success(T["pmf_si"]) if pmf_score >= 40.0 else st.error(T["pmf_no"])st.bar_chart(porcentajes)# Tablas Dinámicasst.subheader(T["tabla_datos"])df_reporte = pd.DataFrame({T["col_pct"]: porcentajes, "Total": conteo_completo})st.dataframe(df_reporte)# Descargabuffer = io.BytesIO()with pd.ExcelWriter(buffer, engine="openpyxl") as writer:df_reporte.to_excel(writer, sheet_name="PMF Report")buffer.seek(0)st.download_button(label=T["btn_descargar"], data=buffer, file_name="pmf_report.xlsx")# Insights Cualitativos (Feedback escrito)if "Feedback" in df_origen.columns and origen_datos == T["op_envivo"]:st.write("---")st.subheader(T["feedback_tit"])# Filtrar filas que tengan feedback válidodf_feedbacks = df_origen[df_origen["Feedback"].notna() & (df_origen["Feedback"] != "Sin comentarios")]if not df_feedbacks.empty:for idx, row in df_feedbacks.tail(5).iterrows():st.info(f"[{row['Respuesta']}]: "{row['Feedback']}"")else:st.write("No written feedback submitted yet.")
+                delta=f"{pmf_score - 40:.1f}% vs Umbral (40%)",
+            )
+        with col2:
+            if pmf_score >= 40.0:
+                st.success(T["pmf_si"])
+            else:
+                st.error(T["pmf_no"])
+
+        st.bar_chart(porcentajes)
+
+        # Tablas Dinámicas
+        st.subheader(T["tabla_datos"])
+        df_reporte = pd.DataFrame({T["col_pct"]: porcentajes, T["col_usr"]: conteo_completo})
+        st.dataframe(df_reporte)
+
+        # Descarga
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            df_reporte.to_excel(writer, sheet_name="PMF Report")
+        buffer.seek(0)
+        st.download_button(label=T["btn_descargar"], data=buffer, file_name="pmf_report.xlsx")
+
+        # Insights Cualitativos
+        if "Feedback" in df_origen.columns and origen_datos == T["op_envivo"]:
+            st.write("---")
+            st.subheader(T["feedback_tit"])
+            df_feedbacks = df_origen[df_origen["Feedback"].notna() & (df_origen["Feedback"] != "Sin comentarios")]
+            if not df_feedbacks.empty:
