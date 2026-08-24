@@ -221,4 +221,9 @@ if not df_origen.empty and "Respuesta" in df_origen.columns:
             st.subheader(T["feedback_tit"])
             df_feedbacks = df_origen[df_origen["Feedback"].notna() & (df_origen["Feedback"] != "Sin comentarios")]
             if not df_feedbacks.empty:
-for idx, row in df_feedbacks.tail(5).iterrows():st.info(f"[{row['Respuesta']}]: "{row['Feedback']}"")else:st.write("No feedback submitted yet.")
+if not df_feedbacks.empty:
+    for idx, row in df_feedbacks.tail(5).iterrows():
+        # Solución: Comillas simples afuera y comillas dobles adentro
+        st.info(f"**[{row['Respuesta']}]**: *\"{row['Feedback']}\"*")
+else:
+    st.write("No feedback submitted yet.")
