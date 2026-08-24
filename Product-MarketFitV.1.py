@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
 def analizar_pmf(data_respuestas):
     """Calcula el porcentaje de Product-Market Fit y evalúa el resultado."""
     # Crear un DataFrame con las respuestas
