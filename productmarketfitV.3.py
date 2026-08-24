@@ -9,7 +9,7 @@ st.set_page_config(page_title="PMF Analytics Platform", page_icon="📊", layout
 # 🛑 CONFIGURACIÓN DE TU BASE DE DATOS 🛑
 # Reemplaza esta URL por el enlace para compartir de tu Google Sheet (Modo Editor)
 # ==========================================
-URL_GOOGLE_SHEET = "https://google.com"
+URL_GOOGLE_SHEET = "https://docs.google.com/spreadsheets/d/1E9AexVxWPXiIZLqOuXupAKEjwgt_9VEEssRAQJ3efoI/edit?usp=sharing"
 
 
 # Función interna para convertir el link de compartir en link de descarga CSV
