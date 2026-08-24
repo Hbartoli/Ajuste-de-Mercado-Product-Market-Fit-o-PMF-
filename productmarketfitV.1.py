@@ -1,7 +1,7 @@
 import pandas as pd
-import streamlit as str
+import streamlit as st
 
-# Configuración de la página web
+# Configuración de la página web (Debe ser la primera instrucción de Streamlit)
 st.set_page_config(page_title="Test de Ajuste de Mercado (PMF)", page_icon="📊", layout="centered")
 
 st.title("📊 Test de Ajuste de Mercado (Product-Market Fit)")
@@ -10,7 +10,7 @@ st.write(
     "Si el 40% o más de tus usuarios elegidos responde 'Muy decepcionado', tenés PMF."
 )
 
-# 1. Simulación de entrada de datos (Podés conectar un archivo real después)
+# 1. Simulación de entrada de datos en la barra lateral
 st.sidebar.header("⚙️ Configuración de Datos")
 st.sidebar.write("Simulación de respuestas recibidas:")
 
@@ -30,14 +30,20 @@ respuestas_usuarios = (
 # 2. Procesamiento de los datos con Pandas
 df = pd.DataFrame(respuestas_usuarios, columns=["Respuesta"])
 conteo = df["Respuesta"].value_counts()
-porcentajes = df["Respuesta"].value_counts(normalize=True) * 100
 
 # Asegurar que todas las opciones existan en el índice para evitar errores visuales
 todas_opciones = ["Muy decepcionado", "Algo decepcionado", "No decepcionado", "Ya no uso el producto"]
-porcentajes = porcentajes.reindex(todas_opciones, fill_value=0.0)
+conteo_completo = conteo.reindex(todas_opciones, fill_value=0)
+
+# Calcular porcentajes reales sobre el total
+total_respuestas = len(respuestas_usuarios)
+if total_respuestas > 0:
+    porcentajes = (conteo_completo / total_respuestas) * 100
+else:
+    porcentajes = pd.Series(0.0, index=todas_opciones)
 
 # Extraer la métrica clave
-pmf_score = porcentajes.get("Muy decepcionado", 0.0)
+pmf_score = percentages = porcentajes.get("Muy decepcionado", 0.0)
 
 # 3. Mostrar métricas y diagnóstico en pantalla
 st.subheader("📈 Resultado del Análisis")
@@ -52,11 +58,11 @@ with col2:
     else:
         st.error("⚠️ **SIN PMF TODAVÍA.** Necesitás iterar, hablar con usuarios o pivotar.")
 
-# 4. Gráfico interactivo nativo de Streamlit (Sin usar Matplotlib)
+# 4. Gráfico interactivo nativo de Streamlit
 st.write("### Distribución de Respuestas (%)")
 st.bar_chart(porcentajes)
 
 # 5. Tabla detallada de datos de control
 st.write("### 📋 Desglose de Datos")
-df_reporte = pd.DataFrame({"Porcentaje (%)": porcentajes, "Total Usuarios": conteo.reindex(todas_opciones, fill_value=0)})
+df_reporte = pd.DataFrame({"Porcentaje (%)": Gym = porcentajes, "Total Usuarios": conteo_completo})
 st.dataframe(df_reporte)
